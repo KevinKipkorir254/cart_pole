@@ -38,11 +38,14 @@ private:
 
   double current_time_ = 0.0;
 
+  double force = 0.0;
+
   // Initial state
   Eigen::Vector2d q_;           // [x, theta]
   Eigen::Vector2d q_dot_;       // [x_dot, theta_dot]
 
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_pub_;
+  rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr  effort_controller_sub_;
   rclcpp::TimerBase::SharedPtr simulation_timer_;
   rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr effort_sub_;
   rclcpp::Subscription<geometry_msgs::msg::PointStamped>::SharedPtr rviz_disturbance_sub_;
@@ -64,6 +67,8 @@ private:
 
   //void simulate
   void simulate(void);
+
+  void topic_callback(const std_msgs::msg::Float64MultiArray & msg);
 
 };
 

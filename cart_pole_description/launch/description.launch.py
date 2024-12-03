@@ -24,7 +24,7 @@ def generate_launch_description():
                 [
                     FindPackageShare("cart_pole_description"),
                     "cart_pole",
-                    "robot.urdf",
+                    "robot_urdf.urdf",
                 ]
             )
         ]

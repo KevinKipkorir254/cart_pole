@@ -11,6 +11,8 @@
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
 
+using std::placeholders::_1;
+
 namespace cart_pole_de
 {
 
@@ -35,7 +37,7 @@ DeSimulationNode::DeSimulationNode(const rclcpp::NodeOptions & options)
     position_ = this->get_parameter("initial_conditions.position").as_double();
     theta_ = this->get_parameter("initial_conditions.theta").as_double();
 
-    q_(0) = (double)position_;
+    q_(0) = (double)position_ + 3.14;
     q_(1) = (double)theta_;
 
     RCLCPP_INFO(this->get_logger(), "x: %f", q_(0));
@@ -82,6 +84,7 @@ DeSimulationNode::DeSimulationNode(const rclcpp::NodeOptions & options)
 
   joint_state_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
   simulation_timer_ = this->create_wall_timer( std::chrono::duration<double>(dt_), std::bind(&DeSimulationNode::simulate, this));
+  effort_controller_sub_ = this->create_subscription<std_msgs::msg::Float64MultiArray>("effort_controller/commands", 10, std::bind( &DeSimulationNode::topic_callback, this, _1));
 
 }
 
@@ -114,9 +117,9 @@ DeSimulationNode::DeSimulationNode(const rclcpp::NodeOptions & options)
 
     // Function to compute accelerations (q_ddot)
     Eigen::Vector2d DeSimulationNode::compute_acceleration(const Eigen::Vector2d &q, const Eigen::Vector2d &q_dot, double force) {
-        //double x = q(0);
+        double x = q(0);
         double theta = q(1);
-        //double x_dot = q_dot(0);
+        double x_dot = q_dot(0);
         double theta_dot = q_dot(1);
 
         // Compute matrices
@@ -141,45 +144,54 @@ DeSimulationNode::DeSimulationNode(const rclcpp::NodeOptions & options)
         joint_state_msg.header.stamp.sec = current_time_;
         joint_state_msg.header.stamp.nanosec = (current_time_ - (int)current_time_) * 1000000000.0;
 
-/*
-        if(q_(0) > 0.84)
+
+        // if(q_(0) > 0.84)
+        // {
+        // joint_state_msg.name.push_back("slider_1");
+        // joint_state_msg.position.push_back(0.84);
+        // joint_state_msg.velocity.push_back(0.0);
+        // }
+        // else if(q_(0) < -0.84)
+        // {
+        // joint_state_msg.name.push_back("slider_1");
+        // joint_state_msg.position.push_back(-0.84);
+        // joint_state_msg.velocity.push_back(0.0);
+        // }
+        // else 
+
         {
-        joint_state_msg.name.push_back("slider 1");
-        joint_state_msg.position.push_back(0.84);
-        joint_state_msg.velocity.push_back(0.0);
-        }
-        else if(q_(0) < -0.84)
-        {
-        joint_state_msg.name.push_back("slider 1");
-        joint_state_msg.position.push_back(-0.84);
-        joint_state_msg.velocity.push_back(0.0);
-        }
-        else 
-*/
-        {
-        joint_state_msg.name.push_back("slider 1");
+        joint_state_msg.name.push_back("slider_1");
         joint_state_msg.position.push_back(q_(0)/100);
         joint_state_msg.velocity.push_back(q_dot_(0)/100);
         }
 
-        joint_state_msg.name.push_back("continuous_revolute 1");
-        joint_state_msg.position.push_back(q_(1)-3.141595);
-        joint_state_msg.velocity.push_back(q_dot_(1));
+         joint_state_msg.name.push_back("continuous_revolute_1");
+         joint_state_msg.position.push_back(q_(1) - 3.14);
+         joint_state_msg.velocity.push_back(q_dot_(1));
 
-        //print theta
-         //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "theta1: %f  : theta2: %f", theta1_, theta2_);
-         joint_state_pub_->publish(joint_state_msg);
+        // //print theta
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "theta: %f  : position: %f", q_(1), q_(0));
+        joint_state_pub_->publish(joint_state_msg);
 
     }
 
     void DeSimulationNode::simulate(void)
     { 
-        double force = 0.0;
         Eigen::Vector2d q_ddot = compute_acceleration( q_, q_dot_, force);
         publish(q_ddot);
 
         // Increment time
         current_time_ += dt_;
+
+    }
+
+    void DeSimulationNode::topic_callback(const std_msgs::msg::Float64MultiArray & msg)
+    {
+         double force_receiver = msg.data[0];
+         force = force_receiver;
+
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "force: %f", force_receiver);
+
 
     }
     

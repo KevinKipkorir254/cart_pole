@@ -1,0 +1,18 @@
+/**:
+  ros__parameters:
+    K: [0.0, 1.4075, -0.070089, 0.1584]
+
+    alpha: 0.035
+    alpha_swingup: 0.01
+
+    u_max: 0.269
+
+    # 0.0 angle - upward position. When absolute angle is less than this threshold
+    # transition from swing up to LQR
+    lqr_transition_angle: 0.075
+    
+    # torque_multiplier: 0.056179775
+    # 17.2 ohm
+    #torque_multiplier: 5.2
+    torque_multiplier: 1.1
+    # torque_multiplier: 1.0

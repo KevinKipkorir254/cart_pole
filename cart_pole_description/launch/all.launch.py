@@ -19,6 +19,11 @@ def generate_launch_description():
         )
     )
 
+    declared_arguments.append(DeclareLaunchArgument(
+        'use_sim_time', default_value='true', description='Use simulation time'
+    )
+    )
+
     # Initialize Arguments
     gui = LaunchConfiguration("gui")
 
@@ -52,14 +57,14 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[ robot_description, robot_controllers], #robot_description,
+        parameters=[ robot_description, robot_controllers,  {'use_sim_time': True}], #robot_description,
         output="both",
     )
     robot_state_pub_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="both",
-        parameters=[robot_description],
+        parameters=[robot_description,  {'use_sim_time': True}],
     )
     rviz_node = Node(
         package="rviz2",
@@ -74,12 +79,14 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+        parameters=[ {'use_sim_time': True}],
     )
 
     robot_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["effort_controller", "--controller-manager", "/controller_manager"],
+        parameters=[ {'use_sim_time': True}],
     )
 
     # Delay rviz start after `joint_state_broadcaster`

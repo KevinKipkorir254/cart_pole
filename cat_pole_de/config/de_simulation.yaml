@@ -1,13 +1,13 @@
 /**:
   ros__parameters:
-    simulation_dt: 0.1
+    simulation_dt: 0.01
     max_torque: 0.43
     max_velocity_slider_1: 100.0
     max_velocity_continuous_revolute_1: 100.0
 
     initial_conditions:
       position: 0.0
-      theta: 2.641595
+      theta: 3.34 #at 0.0 it thinks it is at the top position, to correct this, I can add 3.14 so it thinks it is at the botton
 
       dposition: 0.0
       dtheta: 0.0

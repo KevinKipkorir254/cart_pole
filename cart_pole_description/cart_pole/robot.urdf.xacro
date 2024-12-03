@@ -133,6 +133,7 @@
 <axis xyz="0 0 1"/>
 <limit effort="1" velocity="20" />
 <joint_properties friction="0.0"/>
+    
 </joint>
 
 <joint name="slider_1" type="prismatic">
